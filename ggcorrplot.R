@@ -28,10 +28,10 @@ corr <- cor(x)
 p.mat <- cor.mtest(mtcars, conf.level = 0.95)
 
 # parameters
-method = "ellipse"
+# method = "ellipse"
 # method = "square"
 # method = "circle"
-# method = "number"
+method = "number"
 number.digits = 2
 type = "full"
 # type = "lower"
@@ -94,7 +94,13 @@ library(ggplot2)
 library(ggforce)
 library(plyr)
 
-p <- ggplot(data = corr)
+p <- ggplot(data = corr) + 
+  geom_rect(mapping = aes(xmin = Var1i - 0.5, xmax = Var1i + 0.5, 
+                          ymin = Var2i - 0.5, ymax = Var2i + 0.5), 
+            color = "grey92", fill = NA) + 
+  theme_bw() + 
+  theme(axis.text.x = element_blank(), 
+        axis.text.y = element_blank())
 
 if (method == "ellipse") {
   ellipse.xy <- function(rho, length = 99) {
@@ -122,12 +128,15 @@ if (method == "ellipse") {
                 color = NA)
 } else if (method == "square") {
   p <- p + 
-    geom_rect(mapping = aes(xmin = Var1i - 0.5*abs.rho, xmax = Var1i + 0.5*abs.rho, 
-                            ymin = Var2i - 0.5*abs.rho, ymax = Var2i + 0.5*abs.rho, 
+    geom_rect(mapping = aes(xmin = Var1i - 0.5*(abs.rho - 0.04), 
+                            xmax = Var1i + 0.5*(abs.rho - 0.04), 
+                            ymin = Var2i - 0.5*(abs.rho - 0.04), 
+                            ymax = Var2i + 0.5*(abs.rho - 0.04), 
                             fill = rho))
 } else if (method == "number") {
-  p <- p + geom_text(mapping = aes(x = Var1i, y = Var2i, colour = rho), 
-                     label = corr$num.label, alpha = corr$abs.rho)
+  p <- p + 
+    geom_text(mapping = aes(x = Var1i, y = Var2i, colour = rho), 
+              label = corr$num.label, alpha = corr$abs.rho)
 }
 
 if (method %in% c("ellipse", "circle", "square")) {
@@ -156,16 +165,33 @@ if (insig == "pch") {
                       shape = pch, size = pch.cex)
 }
 
+if (type == "full") {
+  x.vars <- data.frame(x = 1:nvars, y = 0)
+  y.vars <- data.frame(x = 0, y = (1:nvars))
+  p <- p + 
+    geom_text(data = x.vars, mapping = aes(x, y), label = vars, colour = "grey30") + 
+    geom_text(data = y.vars, mapping = aes(x, y), label = vars, colour = "grey30")
+} else if (type == "lower") {
+  x.vars <- data.frame(x = 1:nvars, y = 0)
+  diag.vars <- data.frame(x = (1:nvars) - 1, y = 1:nvars)
+  p <- p + 
+    geom_text(data = x.vars, mapping = aes(x, y), label = vars, colour = "grey30") + 
+    geom_text(data = diag.vars, mapping = aes(x, y), label = vars, colour = "grey30")
+} else if (type == "upper") {
+  x.vars <- data.frame(x = 1:nvars, y = nvars + 1)
+  diag.vars <- data.frame(x = (1:nvars) + 1, y = 1:nvars)
+  p <- p + 
+    geom_text(data = x.vars, mapping = aes(x, y), label = vars, colour = "grey30") + 
+    geom_text(data = diag.vars, mapping = aes(x, y), label = vars, colour = "grey30")
+}
+
+# theme
 p <- p + 
-  geom_vline(xintercept = 0.5 + seq(1, nvars - 1, by = 1), color = "grey92") + 
-  geom_hline(yintercept = 0.5 + seq(1, nvars - 1, by = 1), color = "grey92") + 
   coord_fixed() + 
-  scale_x_continuous(expand = c(0, 0), limits = c(0.5, nvars + 0.5), 
-                     breaks = seq(1, nvars, by = 1), labels = vars) + 
-  scale_y_continuous(expand = c(0, 0), limits = c(0.5, nvars + 0.5), 
-                     breaks = seq(1, nvars, by = 1), labels = vars) + 
-  theme_bw() + 
   theme(axis.title = element_blank(), 
-        panel.grid.major = element_blank())
+        axis.ticks = element_blank(), 
+        panel.border = element_blank(), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
 
 p
