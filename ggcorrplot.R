@@ -22,176 +22,191 @@ cor.mtest <- function(x, ...) {
   p.mat
 }
 
+ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number"), 
+                       type = c("full", "lower", "upper"), p.mat = NULL, 
+                       sig.level = 0.05, number.digits = 2, 
+                       insig = c("pch", "blank"), pch = 4, pch.cex = 5) {
+  method <- match.arg(method)
+  type <- match.arg(type)
+  insig <- match.arg(insig)
+  
+  vars <- colnames(corr)
+  # number of variables
+  nvars <- length(vars)
+  
+  if (type == "lower") {
+    corr[upper.tri(corr)] <- NA
+    p.mat[upper.tri(p.mat)] <- NA
+  } else if(type == "upper") {
+    corr[lower.tri(corr)] <- NA
+    p.mat[lower.tri(p.mat)] <- NA
+  }
+  
+  require(dplyr)
+  
+  p.mat <- reshape2::melt(p.mat, na.rm = TRUE) %>% 
+    mutate(rid = as.integer(as.factor(Var1)), 
+           cid = as.integer(as.factor(Var2)))
+  corr <- reshape2::melt(corr, na.rm = TRUE) %>% 
+    dplyr::rename(rho = value) %>% 
+    mutate(pval = p.mat$value) %>% 
+    mutate(signif = as.numeric(pval <= sig.level)) %>% 
+    mutate(abs.rho = abs(rho)) %>% 
+    mutate(num.label = ifelse(rho == 1, rho, format(round(rho, digits = number.digits), 
+                                                    nsmall = number.digits))) %>% 
+    mutate(rid = as.integer(as.factor(Var1)), 
+           cid = as.integer(as.factor(Var2)))
+  # insignificant p value matrix
+  p.mat <- p.mat %>% 
+    filter(value > sig.level)
+  
+  if (insig == "blank") {
+    corr <- corr %>% 
+      mutate(rho = rho * signif)
+  }
+  
+  # default palette of corrplot
+  library(RColorBrewer)
+  col2 <- colorRampPalette(brewer.pal(n = 11, name = "RdBu"))
+  # customize your own palette
+  colorRampPalette(c("red", "white", "blue"))(200)
+  
+  library(ggplot2)
+  library(ggforce)
+  library(plyr)
+  
+  p <- ggplot(data = corr) + 
+    geom_rect(mapping = aes(xmin = cid - 0.5, xmax = cid + 0.5, 
+                            ymin = rid - 0.5, ymax = rid + 0.5), 
+              color = "grey92", fill = NA) + 
+    coord_fixed() + 
+    scale_y_reverse() + 
+    theme_bw() + 
+    theme(legend.margin = margin(0, unit='cm'), 
+          axis.text.x = element_blank(), 
+          axis.text.y = element_blank(), 
+          axis.title = element_blank(), 
+          axis.ticks = element_blank(), 
+          panel.border = element_blank(), 
+          panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank())
+  
+  if (method == "ellipse") {
+    ellipse.xy <- function(rho, length = 99) {
+      theta <- seq(0, 2 * pi, length = length)
+      if (rho == 1) rho <- rho - 1e-4
+      d <- acos(rho)
+      x <- cos(theta + d / 2) / 2
+      y <- cos(theta - d / 2) / 2
+      as.data.frame(cbind(x, y))
+    }
+    
+    ellipse.dat <- ddply(corr, .(Var1, Var2), function(df) {
+      res <- ellipse.xy(df$rho) %>% 
+        mutate(rid = df$rid, cid = df$cid, rho =  df$rho) %>% 
+        mutate(x1 = 0.9 * x + cid, y1 = 0.9 * y + rid, 
+               group = paste(rid, cid, sep = "-"))
+    })
+    
+    p <- p + 
+      geom_polygon(data = ellipse.dat, mapping = aes(x = x1, y = y1, fill = rho, group = group), 
+                   color = NA)
+  } else if (method == "circle") {
+    p <- p + 
+      geom_circle(mapping = aes(x0 = cid, y0 = rid, r = abs.rho/2 - 0.02, fill = rho), 
+                  color = NA)
+  } else if (method == "square") {
+    p <- p + 
+      geom_rect(mapping = aes(xmin = cid - 0.5*(abs.rho - 0.04), 
+                              xmax = cid + 0.5*(abs.rho - 0.04), 
+                              ymin = rid - 0.5*(abs.rho - 0.04), 
+                              ymax = rid + 0.5*(abs.rho - 0.04), 
+                              fill = rho))
+  } else if (method == "number") {
+    p <- p + 
+      geom_text(mapping = aes(x = cid, y = rid, colour = rho), 
+                label = corr$num.label, alpha = corr$abs.rho)
+  }
+  
+  # indicate insigificant p value with point character
+  if (insig == "pch") {
+    p <- p + geom_point(data = p.mat, mapping = aes(x = cid, y = rid), 
+                        shape = pch, size = pch.cex)
+  }
+  
+  if (type %in% c("full", "upper")) {
+    if (method %in% c("ellipse", "circle", "square")) {
+      p <- p + scale_fill_gradientn(colours = col2(200), limits = c(-1, 1),
+                                    guide = guide_colorbar(
+                                      title = "",
+                                      nbin = 1000,
+                                      ticks.colour = "black",
+                                      frame.colour = "black",
+                                      barwidth = 1.5,
+                                      barheight = 15))
+    } else {
+      p <- p + scale_colour_gradientn(colours = col2(200), limits = c(-1, 1), 
+                                      guide = guide_colorbar(
+                                        title = "", 
+                                        nbin = 1000, 
+                                        ticks.colour = "black",
+                                        frame.colour = "black",
+                                        barwidth = 1.5, 
+                                        barheight = 15))
+    }
+  } else if (type %in% c("lower")) {
+    if (method %in% c("ellipse", "circle", "square")) {
+      p <- p + scale_fill_gradientn(colours = col2(200), limits = c(-1, 1),
+                                    guide = guide_colorbar(
+                                      direction = "horizontal", 
+                                      title = "",
+                                      nbin = 1000,
+                                      ticks.colour = "black",
+                                      frame.colour = "black",
+                                      barwidth = 15,
+                                      barheight = 1.5))
+    } else {
+      p <- p + scale_colour_gradientn(colours = col2(200), limits = c(-1, 1), 
+                                      guide = guide_colorbar(
+                                        direction = "horizontal", 
+                                        title = "", 
+                                        nbin = 1000, 
+                                        ticks.colour = "black",
+                                        frame.colour = "black",
+                                        barwidth = 15, 
+                                        barheight = 1.5))
+    }
+    p <- p + theme(legend.position = "bottom")
+  }
+  
+  # variable labels
+  if (type == "full") {
+    x.vars <- data.frame(x = 1:nvars, y = 0)
+    y.vars <- data.frame(x = 0, y = 1:nvars)
+    p <- p + 
+      geom_text(data = x.vars, mapping = aes(x, y), label = vars, colour = "grey30") + 
+      geom_text(data = y.vars, mapping = aes(x, y), label = vars, colour = "grey30")
+  } else if (type == "lower") {
+    y.vars <- data.frame(x = 0, y = 1:nvars)
+    diag.vars <- data.frame(x = 1:nvars, y = (1:nvars) - 1)
+    p <- p + 
+      geom_text(data = y.vars, mapping = aes(x, y), label = vars, colour = "grey30") + 
+      geom_text(data = diag.vars, mapping = aes(x, y), label = vars, colour = "grey30")
+  } else if (type == "upper") {
+    x.vars <- data.frame(x = 1:nvars, y = 0)
+    diag.vars <- data.frame(x = (1:nvars) - 1, y = 1:nvars)
+    p <- p + 
+      geom_text(data = x.vars, mapping = aes(x, y), label = vars, colour = "grey30") + 
+      geom_text(data = diag.vars, mapping = aes(x, y), label = vars, colour = "grey30")
+  }
+  
+  return(p)
+}
+
 x <- mtcars
 
 corr <- cor(x)
 p.mat <- cor.mtest(mtcars, conf.level = 0.95)
 
-# parameters
-# method = "ellipse"
-# method = "square"
-# method = "circle"
-method = "number"
-number.digits = 2
-type = "full"
-# type = "lower"
-# type = "upper"
-show.diag = TRUE
-sig.level = 0.05
-insig = "blank"
-insig = "pch"
-pch = 4
-pch.cex = 5
-
-vars <- colnames(corr)
-# number of variables
-nvars <- length(vars)
-
-if (type == "lower") {
-  corr[upper.tri(corr)] <- NA
-  p.mat[upper.tri(p.mat)] <- NA
-} else if(type == "upper") {
-  corr[lower.tri(corr)] <- NA
-  p.mat[lower.tri(p.mat)] <- NA
-}
-
-if (!show.diag) {
-  diag(corr) <- NA
-  diag(p.mat) <- NA
-}
-
-library(dplyr)
-
-p.mat <- reshape2::melt(p.mat, na.rm = TRUE) %>% 
-  mutate(Var1i = as.integer(as.factor(Var1)), 
-         Var2i = as.integer(as.factor(Var2)))
-corr <- reshape2::melt(corr, na.rm = TRUE) %>% 
-  dplyr::rename(rho = value) %>% 
-  mutate(pval = p.mat$value) %>% 
-  mutate(signif = as.numeric(pval <= sig.level)) %>% 
-  mutate(abs.rho = abs(rho)) %>% 
-  mutate(num.label = ifelse(rho == 1, rho, format(round(rho, digits = number.digits), 
-                                                    nsmall = number.digits))) %>% 
-  mutate(Var1i = as.integer(as.factor(Var1)), 
-         Var2i = as.integer(as.factor(Var2)))
-# insignificant p value matrix
-p.mat <- p.mat %>% 
-  filter(value > sig.level)
-
-if (insig == "blank") {
-  corr <- corr %>% 
-    mutate(rho = rho * signif)
-}
-
-# default palette of corrplot
-col2 <- colorRampPalette(c("#67001F", "#B2182B", "#D6604D", "#F4A582",
-                           "#FDDBC7", "#FFFFFF", "#D1E5F0", "#92C5DE",
-                           "#4393C3", "#2166AC", "#053061"))
-# customize your own palette
-colorRampPalette(c("red","white","blue"))(200)
-
-library(ggplot2)
-library(ggforce)
-library(plyr)
-
-p <- ggplot(data = corr) + 
-  geom_rect(mapping = aes(xmin = Var1i - 0.5, xmax = Var1i + 0.5, 
-                          ymin = Var2i - 0.5, ymax = Var2i + 0.5), 
-            color = "grey92", fill = NA) + 
-  theme_bw() + 
-  theme(axis.text.x = element_blank(), 
-        axis.text.y = element_blank())
-
-if (method == "ellipse") {
-  ellipse.xy <- function(rho, length = 99) {
-    theta <- seq(0, 2 * pi, length = length)
-    if (rho == 1) rho <- rho - 1e-4
-    d <- acos(rho)
-    x <- cos(theta + d / 2) / 2
-    y <- cos(theta - d / 2) / 2
-    as.data.frame(cbind(x, y))
-  }
-  
-  ellipse.dat <- ddply(corr, .(Var1, Var2), function(df) {
-    res <- ellipse.xy(df$rho) %>% 
-      mutate(Var1i = df$Var1i, Var2i = df$Var2i, rho =  df$rho) %>% 
-      mutate(x1 = 0.9 * x + Var1i, y1 = 0.9 * y + Var2i, 
-             group = paste(Var1i, Var2i, sep = "-"))
-  })
-  
-  p <- p + 
-    geom_polygon(data = ellipse.dat, mapping = aes(x = x1, y = y1, fill = rho, group = group), 
-                 color = NA)
-} else if (method == "circle") {
-  p <- p + 
-    geom_circle(mapping = aes(x0 = Var1i, y0 = Var2i, r = abs.rho/2 - 0.02, fill = rho), 
-                color = NA)
-} else if (method == "square") {
-  p <- p + 
-    geom_rect(mapping = aes(xmin = Var1i - 0.5*(abs.rho - 0.04), 
-                            xmax = Var1i + 0.5*(abs.rho - 0.04), 
-                            ymin = Var2i - 0.5*(abs.rho - 0.04), 
-                            ymax = Var2i + 0.5*(abs.rho - 0.04), 
-                            fill = rho))
-} else if (method == "number") {
-  p <- p + 
-    geom_text(mapping = aes(x = Var1i, y = Var2i, colour = rho), 
-              label = corr$num.label, alpha = corr$abs.rho)
-}
-
-if (method %in% c("ellipse", "circle", "square")) {
-  p <- p + scale_fill_gradientn(colours = col2(200), limits = c(-1, 1),
-                                guide = guide_colorbar(
-                                  title = "",
-                                  nbin = 1000,
-                                  ticks.colour = "black",
-                                  frame.colour = "black",
-                                  barwidth = 1.5,
-                                  barheight = 10))
-} else {
-  p <- p + scale_colour_gradientn(colours = col2(200), limits = c(-1, 1), 
-                                  guide = guide_colorbar(
-                                    title = "", 
-                                    nbin = 1000, 
-                                    ticks.colour = "black",
-                                    frame.colour = "black",
-                                    barwidth = 1.5, 
-                                    barheight = 10))
-}
-
-# indicate insigificant p value with point character
-if (insig == "pch") {
-  p <- p + geom_point(data = p.mat, mapping = aes(x = Var1i, y = Var2i), 
-                      shape = pch, size = pch.cex)
-}
-
-if (type == "full") {
-  x.vars <- data.frame(x = 1:nvars, y = 0)
-  y.vars <- data.frame(x = 0, y = (1:nvars))
-  p <- p + 
-    geom_text(data = x.vars, mapping = aes(x, y), label = vars, colour = "grey30") + 
-    geom_text(data = y.vars, mapping = aes(x, y), label = vars, colour = "grey30")
-} else if (type == "lower") {
-  x.vars <- data.frame(x = 1:nvars, y = 0)
-  diag.vars <- data.frame(x = (1:nvars) - 1, y = 1:nvars)
-  p <- p + 
-    geom_text(data = x.vars, mapping = aes(x, y), label = vars, colour = "grey30") + 
-    geom_text(data = diag.vars, mapping = aes(x, y), label = vars, colour = "grey30")
-} else if (type == "upper") {
-  x.vars <- data.frame(x = 1:nvars, y = nvars + 1)
-  diag.vars <- data.frame(x = (1:nvars) + 1, y = 1:nvars)
-  p <- p + 
-    geom_text(data = x.vars, mapping = aes(x, y), label = vars, colour = "grey30") + 
-    geom_text(data = diag.vars, mapping = aes(x, y), label = vars, colour = "grey30")
-}
-
-# theme
-p <- p + 
-  coord_fixed() + 
-  theme(axis.title = element_blank(), 
-        axis.ticks = element_blank(), 
-        panel.border = element_blank(), 
-        panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank())
-
+p <- ggcorrplot(corr = corr, p.mat = p.mat, type = "lower")
 p
