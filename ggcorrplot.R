@@ -1,5 +1,3 @@
-rm(list = ls())
-
 #' Compute the matrix of correlation p-values
 #'
 #' @param x numeric matrix or data frame
@@ -166,42 +164,7 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
                 color = "grey92", fill = NA)
   }
   
-  if (method == "ellipse") {
-    ellipse.xy <- function(rho, length = 99) {
-      theta <- seq(0, 2 * pi, length = length)
-      if (rho == 1) rho <- rho - 1e-4
-      d <- acos(rho)
-      x <- cos(theta + d / 2) / 2
-      y <- cos(theta - d / 2) / 2
-      as.data.frame(cbind(x, y))
-    }
-    
-    ellipse.dat <- ddply(corr, .(Var1, Var2), function(df) {
-      res <- ellipse.xy(df$rho) %>% 
-        mutate(rid = df$rid, cid = df$cid, rho =  df$rho) %>% 
-        mutate(x1 = 0.9 * x + cid, y1 = 0.9 * y + rid, 
-               group = paste(rid, cid, sep = "-"))
-    })
-    
-    p <- p + 
-      geom_polygon(data = ellipse.dat, mapping = aes(x = x1, y = y1, fill = rho, group = group), 
-                   color = NA)
-  } else if (method == "circle") {
-    p <- p + 
-      geom_circle(mapping = aes(x0 = cid, y0 = rid, r = abs.rho/2 - 0.02, fill = rho), 
-                  color = NA)
-  } else if (method == "square") {
-    p <- p + 
-      geom_rect(mapping = aes(xmin = cid - 0.5*(abs.rho - 0.04), 
-                              xmax = cid + 0.5*(abs.rho - 0.04), 
-                              ymin = rid - 0.5*(abs.rho - 0.04), 
-                              ymax = rid + 0.5*(abs.rho - 0.04), 
-                              fill = rho))
-  } else if (method == "number") {
-    p <- p + 
-      geom_text(mapping = aes(x = cid, y = rid, colour = rho), 
-                label = corr$num.label, alpha = corr$abs.rho)
-  }
+  p <- plot.method(p, data = corr, method = method)
   
   # indicate insigificant p value with point character
   if (insig == "pch") {
@@ -209,6 +172,7 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
                         shape = pch, size = pch.cex)
   }
   
+  # colorbar
   if (type %in% c("full", "upper")) {
     if (method %in% c("ellipse", "circle", "square")) {
       p <- p + scale_fill_gradientn(colours = col2(200), limits = c(-1, 1),
@@ -220,13 +184,13 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
                                       barwidth = 1.5,
                                       barheight = 15))
     } else {
-      p <- p + scale_colour_gradientn(colours = col2(200), limits = c(-1, 1), 
+      p <- p + scale_colour_gradientn(colours = col2(200), limits = c(-1, 1),
                                       guide = guide_colorbar(
-                                        title = "", 
-                                        nbin = 1000, 
+                                        title = "",
+                                        nbin = 1000,
                                         ticks.colour = "black",
                                         frame.colour = "black",
-                                        barwidth = 1.5, 
+                                        barwidth = 1.5,
                                         barheight = 15))
     }
   } else if (type %in% c("lower")) {
@@ -293,11 +257,3 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
   
   return(p)
 }
-
-x <- mtcars
-
-corr <- cor(x)
-p.mat <- cor.mtest(mtcars, conf.level = 0.95)
-
-p <- ggcorrplot(corr = corr, p.mat = p.mat, type = "full", show.diag = TRUE)
-p
