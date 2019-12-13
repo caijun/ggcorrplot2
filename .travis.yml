@@ -4,3 +4,4 @@ r_packages:
   - ggplot2
   - dplyr
   - ggforce
+sudo: required
