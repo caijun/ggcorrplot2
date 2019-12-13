@@ -27,7 +27,7 @@ The `mtcars` dataset will be used to demonstrate the usages of **ggcorrplot2**. 
 
 ```{r, echo = FALSE}
 knitr::opts_chunk$set(
-  dpi = 300,
+  dpi = 200,
   fig.path = "figs/README-"
 )
 ```
