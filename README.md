@@ -21,7 +21,7 @@ Alboukadel Kassambara, [ggcorr](https://github.com/briatte/ggcorr)
 developed by François Briatte) that can visualize a correlation matrix
 into a corrplot using ggplot2; however, they are unable to visualize a
 correlation matrix using ellipse and mixed methods. **ggcorrplot2** has
-implemented only a subset of features of corrplot to meet my urgent
+implemented only a subset of features of **corrplot** to meet my urgent
 needs. See examples in the **Getting started** section. More
 functionality will be added in the future as needed.
 
