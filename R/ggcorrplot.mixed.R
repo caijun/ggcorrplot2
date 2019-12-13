@@ -1,4 +1,4 @@
-#' Visualize a correlation matrix using mixed methods
+#' @title Visualize a correlation matrix using mixed methods
 #'
 #' @param corr a correlation matrix to be visualized
 #' @param upper a character indicating the visualization method of the upper triangular matrix to be used. Currently, it supports four methods, named "circle" (default), "square", "ellipse", "number".
@@ -23,16 +23,7 @@ ggcorrplot.mixed <- function(corr, upper = c("circle", "square", "ellipse", "num
   # number of variables
   nvars <- length(vars)
 
-  p.mat0 <- reshape2::melt(p.mat, value.name = "pval") %>%
-    mutate(rid = as.integer(as.factor(.data$Var1)),
-           cid = as.integer(as.factor(.data$Var2))) %>%
-    mutate(part = case_when(
-      .$rid < .$cid ~ "upper",
-      .$rid == .$cid ~ "diag",
-      .$rid > .$cid ~ "lower"
-    ))
-
-  corr0 <- reshape2::melt(corr, value.name = "rho") %>%
+  corr <- reshape2::melt(corr, value.name = "rho") %>%
     mutate(rid = as.integer(as.factor(.data$Var1)),
            cid = as.integer(as.factor(.data$Var2))) %>%
     mutate(part = case_when(
@@ -40,25 +31,38 @@ ggcorrplot.mixed <- function(corr, upper = c("circle", "square", "ellipse", "num
       .$rid == .$cid ~ "diag",
       .$rid > .$cid ~ "lower"
     )) %>%
-    mutate(pval = p.mat0$pval) %>%
-    mutate(signif = as.numeric(.data$pval <= sig.lvl)) %>%
     mutate(abs.rho = abs(.data$rho)) %>%
     mutate(num.label = ifelse(.data$rho == 1, .data$rho, format(round(.data$rho, digits = number.digits),
-                                                    nsmall = number.digits)))
+                                                                nsmall = number.digits)))
 
-  # insignificant p value matrix
-  p.mat0 <- p.mat0 %>%
-    dplyr::filter(.data$pval > sig.lvl)
+  if (!is.null(p.mat)) {
+    p.mat <- reshape2::melt(p.mat, value.name = "pval") %>%
+      mutate(rid = as.integer(as.factor(.data$Var1)),
+             cid = as.integer(as.factor(.data$Var2))) %>%
+      mutate(part = case_when(
+        .$rid < .$cid ~ "upper",
+        .$rid == .$cid ~ "diag",
+        .$rid > .$cid ~ "lower"
+      ))
 
-  if (insig == "blank") {
-    corr0 <- corr0 %>%
-      mutate(rho = .data$rho * signif)
+    corr <- corr %>%
+      mutate(pval = p.mat$pval) %>%
+      mutate(signif = as.numeric(.data$pval <= sig.lvl))
+
+    # insignificant p value matrix
+    p.mat <- p.mat %>%
+      dplyr::filter(.data$pval > sig.lvl)
+
+    if (insig == "blank") {
+      corr <- corr %>%
+        mutate(rho = .data$rho * signif)
+    }
   }
 
   # default palette of corrplot
   col2 <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(n = 11, name = "RdBu"))
 
-  p <- ggplot(data = corr0) +
+  p <- ggplot(data = corr) +
     geom_rect(mapping = aes(xmin = .data$cid - 0.5, xmax = .data$cid + 0.5,
                             ymin = .data$rid - 0.5, ymax = .data$rid + 0.5),
               color = "grey92", fill = NA) +
@@ -75,20 +79,20 @@ ggcorrplot.mixed <- function(corr, upper = c("circle", "square", "ellipse", "num
           panel.grid.minor = element_blank())
 
   # add upper plot
-  upper.dat <- corr0 %>%
+  upper.dat <- corr %>%
     dplyr::filter(.data$part == "upper")
 
   p <- plot.method(p, data = upper.dat, method = upper)
 
   # add lower plot
-  lower.dat <- corr0 %>%
+  lower.dat <- corr %>%
     dplyr::filter(.data$part == "lower")
 
   p <- plot.method(p, data = lower.dat, method = lower)
 
   # indicate insigificant p value with point character
-  if (insig == "pch") {
-    p <- p + geom_point(data = p.mat0, mapping = aes(x = .data$cid, y = .data$rid),
+  if (!is.null(p.mat) & insig == "pch") {
+    p <- p + geom_point(data = p.mat, mapping = aes(x = .data$cid, y = .data$rid),
                         shape = pch, size = pch.cex)
   }
 

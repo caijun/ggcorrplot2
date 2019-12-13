@@ -1,8 +1,9 @@
-#' Add the geom of correlation matrix to the existing plot
-#'
-#' @param p a ggplot object
-#' @param data a data.frame to be plotted
-#' @param method a character indicating the visualization method of correlation matrix to be used. Currently, it supports four methods, named "circle" (default), "square", "ellipse", "number".
+# internal
+# @title Add the geom of correlation matrix to the existing plot
+#
+# @param p a ggplot object
+# @param data a data.frame to be plotted
+# @param method a character indicating the visualization method of correlation matrix to be used. Currently, it supports four methods, named "circle" (default), "square", "ellipse", "number".
 #' @import ggplot2
 #' @importFrom dplyr %>% mutate group_by group_modify case_when
 #' @importFrom rlang .data
@@ -55,7 +56,7 @@ plot.method <- function(p, data, method = c("circle", "square", "ellipse", "numb
   return(p)
 }
 
-#' Visualize a correlation matrix
+#' @title Visualize a correlation matrix
 #'
 #' @param corr a correlation matrix to be visualized
 #' @param method a character indicating the visualization method of correlation matrix to be used. Currently, it supports four methods, named "circle" (default), "square", "ellipse", "number".
@@ -81,16 +82,7 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
   # number of variables
   nvars <- length(vars)
 
-  p.mat0 <- reshape2::melt(p.mat, value.name = "pval") %>%
-    mutate(rid = as.integer(as.factor(.data$Var1)),
-           cid = as.integer(as.factor(.data$Var2))) %>%
-    mutate(part = case_when(
-      .$rid < .$cid ~ "upper",
-      .$rid == .$cid ~ "diag",
-      .$rid > .$cid ~ "lower"
-    ))
-
-  corr0 <- reshape2::melt(corr, value.name = "rho") %>%
+  corr <- reshape2::melt(corr, value.name = "rho") %>%
     mutate(rid = as.integer(as.factor(.data$Var1)),
            cid = as.integer(as.factor(.data$Var2))) %>%
     mutate(part = case_when(
@@ -98,44 +90,59 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
       .$rid == .$cid ~ "diag",
       .$rid > .$cid ~ "lower"
     )) %>%
-    mutate(pval = p.mat0$pval) %>%
-    mutate(signif = as.numeric(.data$pval <= sig.lvl)) %>%
     mutate(abs.rho = abs(.data$rho)) %>%
     mutate(num.label = ifelse(.data$rho == 1, .data$rho, format(round(.data$rho, digits = number.digits),
-                                                    nsmall = number.digits)))
+                                                                nsmall = number.digits)))
+
+  if (!is.null(p.mat)) {
+    p.mat <- reshape2::melt(p.mat, value.name = "pval") %>%
+      mutate(rid = as.integer(as.factor(.data$Var1)),
+             cid = as.integer(as.factor(.data$Var2))) %>%
+      mutate(part = case_when(
+        .$rid < .$cid ~ "upper",
+        .$rid == .$cid ~ "diag",
+        .$rid > .$cid ~ "lower"
+      ))
+
+    corr <- corr %>%
+      mutate(pval = p.mat$pval) %>%
+      mutate(signif = as.numeric(.data$pval <= sig.lvl))
+
+    # insignificant p value matrix
+    p.mat <- p.mat %>%
+      dplyr::filter(.data$pval > sig.lvl)
+
+    if (insig == "blank") {
+      corr <- corr %>%
+        mutate(rho = .data$rho * signif)
+    }
+  }
 
   if (type == "lower") {
-    corr0 <- corr0 %>%
+    corr <- corr %>%
       dplyr::filter(.data$part != "upper")
-    p.mat0 <- p.mat0 %>%
-      dplyr::filter(.data$part != "upper")
+    if (!is.null(p.mat)) {
+      p.mat <- p.mat %>%
+        dplyr::filter(.data$part != "upper")
+    }
   } else if(type == "upper") {
-    corr0 <- corr0 %>%
+    corr <- corr %>%
       dplyr::filter(.data$part != "lower")
-    p.mat0 <- p.mat0 %>%
-      dplyr::filter(.data$part != "lower")
+    if (!is.null(p.mat)) {
+      p.mat <- p.mat %>%
+        dplyr::filter(.data$part != "lower")
+    }
   }
 
   if (!show.diag) {
-    corr0 <- corr0 %>%
+    corr <- corr %>%
       dplyr::filter(.data$part != "diag")
-    p.mat0 <- p.mat0 %>%
-      dplyr::filter(.data$part != "diag")
-  }
-
-  # insignificant p value matrix
-  p.mat0 <- p.mat0 %>%
-    dplyr::filter(.data$pval > sig.lvl)
-
-  if (insig == "blank") {
-    corr0 <- corr0 %>%
-      mutate(rho = .data$rho * signif)
   }
 
   # default palette of corrplot
   col2 <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(n = 11, name = "RdBu"))
 
-  p <- ggplot(data = corr0) +
+  p <- ggplot(data = corr) +
     geom_rect(mapping = aes(xmin = .data$cid - 0.5, xmax = .data$cid + 0.5,
                             ymin = .data$rid - 0.5, ymax = .data$rid + 0.5),
               color = "grey92", fill = NA) +
@@ -161,11 +168,11 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
                 color = "grey92", fill = NA)
   }
 
-  p <- plot.method(p, data = corr0, method = method)
+  p <- plot.method(p, data = corr, method = method)
 
   # indicate insigificant p value with point character
-  if (insig == "pch") {
-    p <- p + geom_point(data = p.mat0, mapping = aes(x = .data$cid, y = .data$rid),
+  if (!is.null(p.mat) & insig == "pch") {
+    p <- p + geom_point(data = p.mat, mapping = aes(x = .data$cid, y = .data$rid),
                         shape = pch, size = pch.cex)
   }
 

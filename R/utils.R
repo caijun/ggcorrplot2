@@ -1,4 +1,4 @@
-#' Compute the matrix of correlation p-values
+#' @title Compute the matrix of correlation p-values
 #'
 #' @param x numeric matrix or data frame
 #' @param ... other arguments to be passed to the function cor.test.
