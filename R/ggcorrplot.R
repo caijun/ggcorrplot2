@@ -159,12 +159,8 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
                             ymin = .data$rid - 0.5, ymax = .data$rid + 0.5),
               color = "grey92", fill = NA) +
     coord_fixed() +
-    # scale_x_continuous(expand = c(0, 0)) +
-    # scale_y_reverse(expand = c(0, 0)) +
     theme_bw() +
     theme(legend.margin = margin(0, unit = 'cm'),
-          # axis.text.x = element_blank(),
-          # axis.text.y = element_blank(),
           axis.title = element_blank(),
           axis.ticks = element_blank(),
           panel.border = element_blank(),
@@ -191,7 +187,7 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
 
   # indicate insigificant p value with point character
   if (!is.null(p.mat.insig) & insig == "pch") {
-    p <- p + geom_point(data = p.mat, mapping = aes(x = .data$cid, y = .data$rid),
+    p <- p + geom_point(data = p.mat.insig, mapping = aes(x = .data$cid, y = .data$rid),
                         shape = pch, size = pch.cex)
   }
 
@@ -280,7 +276,7 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
     }
     p <- p +
       geom_text(data = diag.vars, mapping = aes(.data$x, .data$y), label = diag.label,
-                colour = "grey30", , size = geom.text.fontsize) +
+                colour = "grey30", size = geom.text.fontsize) +
       scale_x_continuous(breaks = x.vars$x, labels = x.label, expand = c(0, 0),
                          position = "top", limits = c(min(diag.vars$x) - 0.5, nvars + 0.5)) +
       scale_y_reverse(expand = c(0, 0)) +
