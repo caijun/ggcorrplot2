@@ -51,7 +51,7 @@ plot.method <- function(p, data, method = c("circle", "square", "ellipse", "numb
   } else if (method == "number") {
     p <- p +
       geom_text(data = data, mapping = aes(x = .data$cid, y = .data$rid, colour = .data$rho),
-                label = data$num.label, alpha = data$abs.rho)
+                label = data$rho.label, alpha = data$abs.rho)
   }
   return(p)
 }
@@ -59,20 +59,20 @@ plot.method <- function(p, data, method = c("circle", "square", "ellipse", "numb
 #' @title Visualize a correlation matrix
 #'
 #' @param corr a correlation matrix to be visualized
-#' @param method a character indicating the visualization method of correlation matrix to be used. Currently, it supports four methods, named "circle" (default), "square", "ellipse", "number".
-#' @param type a character indicating that "full" (default) matrix, "upper" or "lower" triangular matrix is displayed.
+#' @param method a character indicating the visualization method of correlation matrix to be used. Currently, it supports four methods, named \code{"circle"} (default), \code{"square"}, \code{"ellipse"}, \code{"number"}.
+#' @param type a character indicating that the \code{"full"} (default), \code{"upper"} or \code{"lower"} triangular matrix is displayed.
 #' @param p.mat a matrix of p-value
-#' @param sig.lvl significant level, which is 0.05 by default.
-#' @param number.digits the number of decimal digits while the visualization method is "number".
+#' @param sig.lvl a numeric vector specifying significant level(s). If the p-value in \code{p.mat} is bigger than \code{sig.lvl} (0.05 by default), then the corresponding correlation coefficient is regarded as insignificant. If \code{insig} is \code{"label_sig"}, this may be an increasing vector of significance levels, for example \code{c(0.05, 0.01, 0.001)}, in which case \code{pch} will be used once for the highest p-value interval and multiple times (e.g. "*", "**", "***") for each lower p-value interval.
+#' @param number.digits the number of decimal digits (2 by default) while the visualization method is \code{"number"}.
 #' @param show.diag a logical indicating whether display the correlation coefficients on the principal diagonal.
-#' @param insig a character specialized insignificant correlation coefficients, "pch" (default), or "blank".
+#' @param insig a character specialized insignificant correlation coefficients, \code{"pch"} (default), \code{"blank"}, or \code{"label_sig"}.
 #' @param pch a point character indicating the shape of insignificant correlation coefficients.
 #' @param pch.cex a number controlling the shape size of insignificant correlation coefficients.
 #' @export
 ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number"),
                        type = c("full", "lower", "upper"), p.mat = NULL,
                        sig.lvl = 0.05, number.digits = 2,
-                       show.diag = TRUE, insig = c("pch", "blank"),
+                       show.diag = TRUE, insig = c("pch", "blank", "label_sig"),
                        pch = 4, pch.cex = 5) {
   method <- match.arg(method)
   type <- match.arg(type)
@@ -91,7 +91,7 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
       .$rid > .$cid ~ "lower"
     )) %>%
     mutate(abs.rho = abs(.data$rho)) %>%
-    mutate(num.label = ifelse(.data$rho == 1, .data$rho, format(round(.data$rho, digits = number.digits),
+    mutate(rho.label = ifelse(.data$rho == 1, .data$rho, format(round(.data$rho, digits = number.digits),
                                                                 nsmall = number.digits)))
 
   if (!is.null(p.mat)) {
@@ -104,32 +104,44 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
         .$rid > .$cid ~ "lower"
       ))
 
+    sig.codes <- sapply(seq_along(sig.lvl), function(i) {
+      # By default, mark significance with *
+      if (!is.character(pch)) {
+        pch <- "*"
+      }
+      paste(rep(pch, i), collapse = "")
+    })
+
     corr <- corr %>%
       mutate(pval = p.mat$pval) %>%
-      mutate(signif = as.numeric(.data$pval <= sig.lvl))
+      mutate(signif = as.numeric(.data$pval <= max(sig.lvl))) %>%
+      mutate(sig.codes = cut(.data$pval, breaks = c(sig.lvl, 0, 1), labels = c(rev(sig.codes), ""),
+                             include.lowest = TRUE))
 
     # insignificant p value matrix
-    p.mat <- p.mat %>%
-      dplyr::filter(.data$pval > sig.lvl)
+    p.mat.insig <- p.mat %>%
+      dplyr::filter(.data$pval > max(sig.lvl))
 
     if (insig == "blank") {
       corr <- corr %>%
         mutate(rho = .data$rho * signif)
     }
+  } else {
+    p.mat.insig <- NULL
   }
 
   if (type == "lower") {
     corr <- corr %>%
       dplyr::filter(.data$part != "upper")
-    if (!is.null(p.mat)) {
-      p.mat <- p.mat %>%
+    if (!is.null(p.mat.insig)) {
+      p.mat.insig <- p.mat.insig %>%
         dplyr::filter(.data$part != "upper")
     }
   } else if(type == "upper") {
     corr <- corr %>%
       dplyr::filter(.data$part != "lower")
-    if (!is.null(p.mat)) {
-      p.mat <- p.mat %>%
+    if (!is.null(p.mat.insig)) {
+      p.mat.insig <- p.mat.insig %>%
         dplyr::filter(.data$part != "lower")
     }
   }
@@ -169,9 +181,15 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
   }
 
   p <- plot.method(p, data = corr, method = method)
+  # add significant codes except number method
+  if (!is.null(p.mat) & insig == "label_sig" & method != "number") {
+    p <- p +
+      geom_text(data = corr, mapping = aes(x = .data$cid, y = .data$rid), label = corr$sig.codes,
+                size = pch.cex)
+  }
 
   # indicate insigificant p value with point character
-  if (!is.null(p.mat) & insig == "pch") {
+  if (!is.null(p.mat.insig) & insig == "pch") {
     p <- p + geom_point(data = p.mat, mapping = aes(x = .data$cid, y = .data$rid),
                         shape = pch, size = pch.cex)
   }

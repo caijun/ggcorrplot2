@@ -12,7 +12,7 @@ ggcorrplot(
   sig.lvl = 0.05,
   number.digits = 2,
   show.diag = TRUE,
-  insig = c("pch", "blank"),
+  insig = c("pch", "blank", "label_sig"),
   pch = 4,
   pch.cex = 5
 )
@@ -20,19 +20,19 @@ ggcorrplot(
 \arguments{
 \item{corr}{a correlation matrix to be visualized}
 
-\item{method}{a character indicating the visualization method of correlation matrix to be used. Currently, it supports four methods, named "circle" (default), "square", "ellipse", "number".}
+\item{method}{a character indicating the visualization method of correlation matrix to be used. Currently, it supports four methods, named \code{"circle"} (default), \code{"square"}, \code{"ellipse"}, \code{"number"}.}
 
-\item{type}{a character indicating that "full" (default) matrix, "upper" or "lower" triangular matrix is displayed.}
+\item{type}{a character indicating that the \code{"full"} (default), \code{"upper"} or \code{"lower"} triangular matrix is displayed.}
 
 \item{p.mat}{a matrix of p-value}
 
-\item{sig.lvl}{significant level, which is 0.05 by default.}
+\item{sig.lvl}{a numeric vector specifying significant level(s). If the p-value in \code{p.mat} is bigger than \code{sig.lvl} (0.05 by default), then the corresponding correlation coefficient is regarded as insignificant. If \code{insig} is \code{"label_sig"}, this may be an increasing vector of significance levels, for example \code{c(0.05, 0.01, 0.001)}, in which case \code{pch} will be used once for the highest p-value interval and multiple times (e.g. "*", "**", "***") for each lower p-value interval.}
 
-\item{number.digits}{the number of decimal digits while the visualization method is "number".}
+\item{number.digits}{the number of decimal digits (2 by default) while the visualization method is \code{"number"}.}
 
 \item{show.diag}{a logical indicating whether display the correlation coefficients on the principal diagonal.}
 
-\item{insig}{a character specialized insignificant correlation coefficients, "pch" (default), or "blank".}
+\item{insig}{a character specialized insignificant correlation coefficients, \code{"pch"} (default), \code{"blank"}, or \code{"label_sig"}.}
 
 \item{pch}{a point character indicating the shape of insignificant correlation coefficients.}
 

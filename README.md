@@ -128,6 +128,23 @@ ggcorrplot.mixed(corr, upper = "ellipse", lower = "number", p.mat = p.mat,
 
 ![](figs/README-unnamed-chunk-2-10.png)<!-- -->
 
+``` r
+# Label significant coefficients with varying number of * (default)
+ggcorrplot.mixed(corr, upper = "ellipse", lower = "number", p.mat = p.mat, 
+                 insig = "label_sig", sig.lvl = c(0.05, 0.01, 0.001))
+```
+
+![](figs/README-unnamed-chunk-2-11.png)<!-- -->
+
+``` r
+# Label significant coefficients with arying number of +
+ggcorrplot.mixed(corr, upper = "ellipse", lower = "number", p.mat = p.mat, 
+                 insig = "label_sig", sig.lvl = c(0.05, 0.01, 0.001), pch = "+", 
+                 pch.cex = 4)
+```
+
+![](figs/README-unnamed-chunk-2-12.png)<!-- -->
+
 The above examples reproduce some features of **corrplot**. In the
 following example, the added advantages of implementing **corrplot**
 using ggplot2, such as customizing the appearance of corrgram, combining
@@ -137,9 +154,12 @@ using [cowplot](https://github.com/wilkelab/cowplot), are demonstrated.
 ``` r
 # Combine a lower corrgram and a mixed corrgram side by side with a shared colorbar on the bottom
 # a lower corrgram
-p1 <- ggcorrplot(corr, type = "lower", method = "square")
+p1 <- ggcorrplot(corr, type = "lower", method = "square", p.mat = p.mat, 
+                 insig = "label_sig", sig.lvl = c(0.05, 0.01, 0.001))
 # a mixed corrgram
-p2 <- ggcorrplot.mixed(corr, upper = "ellipse", lower = "number", p.mat = p.mat)
+p2 <- ggcorrplot.mixed(corr, upper = "ellipse", lower = "number", p.mat = p.mat, 
+                       insig = "label_sig", sig.lvl = c(0.05, 0.01, 0.001), 
+                       pch = "+", pch.cex = 4)
 
 library(cowplot)
 prow <- plot_grid(p1 + ggplot2::theme(legend.position = "none"),
