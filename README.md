@@ -11,20 +11,21 @@ Implementation of corrplot using ggplot2
 Reinventing wheels is not what I like doing.
 [corrplot](https://CRAN.R-project.org/package=corrplot) is a great R
 package, but I am really tired of customizing the appearance of
-[corrgram](https://www.tandfonline.com/doi/abs/10.1198/000313002533),
-for example, the space between colorbar and its tick labels, the space
-around the plot that I don’t know how to control when writing it to PDF
-on my macOS. This is most likely because I am more familiar with the
-Grammar of Graphics implemented in ggplot2 than the base plotting system
-in R. There are several R packages (e.g.,
+corrplot, for example, the space between colorbar and its tick labels,
+the space around the plot that I don’t know how to control when writing
+it to PDF on my macOS. This is most likely because I am more familiar
+with the Grammar of Graphics implemented in ggplot2 than the base
+plotting system in R. There are several R packages (e.g.,
 [ggcorrplot](https://github.com/kassambara/ggcorrplot) developed by
 Alboukadel Kassambara, [ggcorr](https://github.com/briatte/ggcorr)
 developed by François Briatte) that can visualize a correlation matrix
-into a corrgram using ggplot2; however, they are unable to visualize a
-correlation matrix using ellipse and mixed methods. **ggcorrplot2** has
-implemented only a subset of features of **corrplot** to meet my urgent
-needs. See examples in the **Getting started** section. More
-functionality will be added in the future as needed.
+into a
+[corrgram](https://www.tandfonline.com/doi/abs/10.1198/000313002533)
+using ggplot2; however, they are unable to visualize a correlation
+matrix using ellipse and mixed methods. **ggcorrplot2** has implemented
+only a subset of features of **corrplot** to meet my urgent needs. See
+examples in the **Getting started** section. More functionality will be
+added in the future as needed.
 
 ## Installation
 
