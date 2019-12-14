@@ -159,11 +159,12 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
                             ymin = .data$rid - 0.5, ymax = .data$rid + 0.5),
               color = "grey92", fill = NA) +
     coord_fixed() +
-    scale_y_reverse() +
+    # scale_x_continuous(expand = c(0, 0)) +
+    # scale_y_reverse(expand = c(0, 0)) +
     theme_bw() +
-    theme(legend.margin = margin(0, unit='cm'),
-          axis.text.x = element_blank(),
-          axis.text.y = element_blank(),
+    theme(legend.margin = margin(0, unit = 'cm'),
+          # axis.text.x = element_blank(),
+          # axis.text.y = element_blank(),
           axis.title = element_blank(),
           axis.ticks = element_blank(),
           panel.border = element_blank(),
@@ -241,16 +242,16 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
   }
 
   # variable labels
+  axis.text.fontsize <- 11 # in pt
+  geom.text.fontsize <- axis.text.fontsize / ggplot2:::.pt # in mm
   if (type == "full") {
-    x.vars <- data.frame(x = 1:nvars, y = 0)
-    y.vars <- data.frame(x = 0, y = 1:nvars)
     p <- p +
-      geom_text(data = x.vars, mapping = aes(.data$x, .data$y), label = vars, colour = "grey30") +
-      geom_text(data = y.vars, mapping = aes(.data$x, .data$y), label = vars, colour = "grey30")
+      scale_x_continuous(breaks = 1:nvars, labels = vars, expand = c(0, 0)) +
+      scale_y_reverse(breaks = 1:nvars, labels = vars, expand = c(0, 0))
   } else if (type == "lower") {
     if (show.diag) {
       y.vars <- data.frame(x = 0, y = 1:nvars)
-      diag.vars <- data.frame(x = 1:nvars, y = (1:nvars) - 1)
+      diag.vars <- data.frame(x = 1:nvars, y = 0:(nvars - 1))
       y.label <- diag.label <- vars
     } else {
       y.vars <- data.frame(x = 0, y = 2:nvars)
@@ -259,12 +260,17 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
       diag.label <- utils::head(vars, -1)
     }
     p <- p +
-      geom_text(data = y.vars, mapping = aes(.data$x, .data$y), label = y.label, colour = "grey30") +
-      geom_text(data = diag.vars, mapping = aes(.data$x, .data$y), label = diag.label, colour = "grey30")
+      geom_text(data = diag.vars, mapping = aes(.data$x, .data$y), label = diag.label,
+                colour = "grey30", size = geom.text.fontsize) +
+      scale_x_continuous(expand = c(0, 0)) +
+      scale_y_reverse(breaks = y.vars$y, labels = y.label, expand = c(0, 0),
+                      limits = c(nvars + 0.5, min(diag.vars$y) - 0.5)) +
+      theme(axis.text.x = element_blank(),
+            axis.text.y = element_text(size = axis.text.fontsize))
   } else if (type == "upper") {
     if (show.diag) {
       x.vars <- data.frame(x = 1:nvars, y = 0)
-      diag.vars <- data.frame(x = (1:nvars) - 1, y = 1:nvars)
+      diag.vars <- data.frame(x = 0:(nvars - 1), y = 1:nvars)
       x.label <- diag.label <- vars
     } else {
       x.vars <- data.frame(x = 2:nvars, y = 0)
@@ -273,8 +279,13 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
       diag.label <- utils::head(vars, -1)
     }
     p <- p +
-      geom_text(data = x.vars, mapping = aes(.data$x, .data$y), label = x.label, colour = "grey30") +
-      geom_text(data = diag.vars, mapping = aes(.data$x, .data$y), label = diag.label, colour = "grey30")
+      geom_text(data = diag.vars, mapping = aes(.data$x, .data$y), label = diag.label,
+                colour = "grey30", , size = geom.text.fontsize) +
+      scale_x_continuous(breaks = x.vars$x, labels = x.label, expand = c(0, 0),
+                         position = "top", limits = c(min(diag.vars$x) - 0.5, nvars + 0.5)) +
+      scale_y_reverse(expand = c(0, 0)) +
+      theme(axis.text.x = element_text(size = axis.text.fontsize),
+            axis.text.y = element_blank())
   }
 
   return(p)

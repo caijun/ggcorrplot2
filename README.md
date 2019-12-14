@@ -130,7 +130,7 @@ ggcorrplot.mixed(corr, upper = "ellipse", lower = "number", p.mat = p.mat,
 ![](figs/README-unnamed-chunk-2-10.png)<!-- -->
 
 ``` r
-# Label significant coefficients with varying number of * (default)
+# Label significant coefficients with asterisks (*, default) denoting the significance level
 ggcorrplot.mixed(corr, upper = "ellipse", lower = "number", p.mat = p.mat, 
                  insig = "label_sig", sig.lvl = c(0.05, 0.01, 0.001))
 ```
@@ -138,7 +138,7 @@ ggcorrplot.mixed(corr, upper = "ellipse", lower = "number", p.mat = p.mat,
 ![](figs/README-unnamed-chunk-2-11.png)<!-- -->
 
 ``` r
-# Label significant coefficients with varying number of +
+# Label significant coefficients with varying number of + denoting the significance level
 ggcorrplot.mixed(corr, upper = "ellipse", lower = "number", p.mat = p.mat, 
                  insig = "label_sig", sig.lvl = c(0.05, 0.01, 0.001), pch = "+", 
                  pch.cex = 4)
@@ -156,7 +156,7 @@ using [cowplot](https://github.com/wilkelab/cowplot), are demonstrated.
 # Combine a lower corrgram and a mixed corrgram side by side with a shared colorbar on the bottom
 # a lower corrgram
 p1 <- ggcorrplot(corr, type = "lower", method = "square", p.mat = p.mat, 
-                 insig = "label_sig", sig.lvl = c(0.05, 0.01, 0.001))
+                 insig = "label_sig", sig.lvl = c(0.05, 0.01, 0.001), show.diag = FALSE)
 # a mixed corrgram
 p2 <- ggcorrplot.mixed(corr, upper = "ellipse", lower = "number", p.mat = p.mat, 
                        insig = "label_sig", sig.lvl = c(0.05, 0.01, 0.001), 
