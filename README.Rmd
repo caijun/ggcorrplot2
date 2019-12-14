@@ -32,7 +32,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r}
+```{r, fig.height=4}
 library(ggcorrplot2)
 
 data(mtcars)
