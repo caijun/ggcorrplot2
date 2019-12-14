@@ -138,7 +138,7 @@ ggcorrplot.mixed(corr, upper = "ellipse", lower = "number", p.mat = p.mat,
 ![](figs/README-unnamed-chunk-2-11.png)<!-- -->
 
 ``` r
-# Label significant coefficients with arying number of +
+# Label significant coefficients with varying number of +
 ggcorrplot.mixed(corr, upper = "ellipse", lower = "number", p.mat = p.mat, 
                  insig = "label_sig", sig.lvl = c(0.05, 0.01, 0.001), pch = "+", 
                  pch.cex = 4)
