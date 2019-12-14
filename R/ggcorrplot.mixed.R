@@ -79,7 +79,8 @@ ggcorrplot.mixed <- function(corr, upper = c("circle", "square", "ellipse", "num
                             ymin = .data$rid - 0.5, ymax = .data$rid + 0.5),
               color = "grey92", fill = NA) +
     coord_fixed() +
-    scale_y_reverse() +
+    scale_x_continuous(expand = c(0, 0)) +
+    scale_y_reverse(expand = c(0, 0)) +
     theme_bw() +
     theme(legend.margin = margin(0, unit='cm'),
           axis.text.x = element_blank(),
