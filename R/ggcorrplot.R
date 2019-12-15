@@ -239,7 +239,7 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
 
   # variable labels
   axis.text.fontsize <- 11 # in pt
-  geom.text.fontsize <- axis.text.fontsize / ggplot2:::.pt # in mm
+  geom.text.fontsize <- axis.text.fontsize / ggplot2::.pt # in mm
   if (type == "full") {
     p <- p +
       scale_x_continuous(breaks = 1:nvars, labels = vars, expand = c(0, 0)) +
