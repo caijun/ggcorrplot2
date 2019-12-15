@@ -9,7 +9,7 @@
 #' @importFrom rlang .data
 plot.method <- function(p, data, method = c("circle", "square", "ellipse", "number")) {
   if (method == "ellipse") {
-    ellipse.xy <- function(rho, length = 99) {
+    ellipse.xy <- function(rho, length = 100) {
       theta <- seq(0, 2 * pi, length = length)
       if (rho == 1) rho <- rho - 1e-4
       d <- acos(rho)
