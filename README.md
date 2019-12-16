@@ -47,7 +47,12 @@ from **corrplot** to **ggcorrplot2**.
 library(ggcorrplot2)
 
 data(mtcars)
-corr <- cor(mtcars)
+# uUe corr.test() from psych package to calculate the correlation matrix and 
+# corresponding p value matrix withtout adjustment.
+library(psych)
+ct <- corr.test(mtcars, adjust = "none")
+corr <- ct$r
+p.mat <- ct$p
 
 # Visualize the correlation matrix
 # --------------------------------
@@ -113,7 +118,6 @@ ggcorrplot.mixed(corr, upper = "ellipse", lower = "number")
 ``` r
 # Combine correlogram with the significance test
 # ----------------------------------------------
-p.mat <- cor.mtest(mtcars, conf.level = 0.95)
 # Insignificant coefficients according to the default significant level 
 # (sig.lvl = 0.05) are indicated by X by default.
 ggcorrplot.mixed(corr, upper = "ellipse", lower = "number", p.mat = p.mat)
