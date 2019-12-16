@@ -47,8 +47,8 @@ from **corrplot** to **ggcorrplot2**.
 library(ggcorrplot2)
 
 data(mtcars)
-# uUe corr.test() from psych package to calculate the correlation matrix and 
-# corresponding p value matrix withtout adjustment.
+# Use corr.test() from psych package to calculate the correlation matrix and 
+# corresponding p value matrix without adjustment.
 library(psych)
 ct <- corr.test(mtcars, adjust = "none")
 corr <- ct$r
