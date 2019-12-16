@@ -19,6 +19,9 @@ ggcorrplot.mixed <- function(corr, upper = c("circle", "square", "ellipse", "num
   lower <- match.arg(lower)
   insig <- match.arg(insig)
 
+  if (is.null(colnames(corr))) {
+    stop("Correlation matrix needs column names!")
+  }
   vars <- colnames(corr)
   # number of variables
   nvars <- length(vars)

@@ -78,6 +78,9 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
   type <- match.arg(type)
   insig <- match.arg(insig)
 
+  if (is.null(colnames(corr))) {
+    stop("Correlation matrix needs column names!")
+  }
   vars <- colnames(corr)
   # number of variables
   nvars <- length(vars)
