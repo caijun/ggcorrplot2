@@ -177,6 +177,15 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
                 color = "grey92", fill = NA)
   }
 
+  if (any(is.na(corr$rho))) {
+    corr.NA <- corr %>%
+      dplyr::filter(is.na(.data$rho))
+    corr <- corr %>%
+      dplyr::filter(!is.na(.data$rho))
+  } else {
+    corr.NA <- NULL
+  }
+
   p <- plot.method(p, data = corr, method = method)
   # add significant codes except number method
   if (!is.null(p.mat) & insig == "label_sig" & method != "number") {
@@ -189,6 +198,13 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
   if (!is.null(p.mat.insig) & insig == "pch") {
     p <- p + geom_point(data = p.mat.insig, mapping = aes(x = .data$cid, y = .data$rid),
                         shape = pch, size = pch.cex)
+  }
+
+  # indicate NA correlation coefficient
+  if (!is.null(corr.NA)) {
+    p <- p +
+      geom_text(data = corr.NA, mapping = aes(x = .data$cid, y = .data$rid), label = "NA",
+                size = pch.cex, color = "grey92")
   }
 
   # colorbar

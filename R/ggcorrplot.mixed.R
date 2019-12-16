@@ -91,6 +91,15 @@ ggcorrplot.mixed <- function(corr, upper = c("circle", "square", "ellipse", "num
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank())
 
+  if (any(is.na(corr$rho))) {
+    corr.NA <- corr %>%
+      dplyr::filter(is.na(.data$rho))
+    corr <- corr %>%
+      dplyr::filter(!is.na(.data$rho))
+  } else {
+    corr.NA <- NULL
+  }
+
   # add upper plot
   upper.dat <- corr %>%
     dplyr::filter(.data$part == "upper")
@@ -119,6 +128,13 @@ ggcorrplot.mixed <- function(corr, upper = c("circle", "square", "ellipse", "num
   if (!is.null(p.mat.insig) & insig == "pch") {
     p <- p + geom_point(data = p.mat.insig, mapping = aes(x = .data$cid, y = .data$rid),
                         shape = pch, size = pch.cex)
+  }
+
+  # indicate NA correlation coefficient
+  if (!is.null(corr.NA)) {
+    p <- p +
+      geom_text(data = corr.NA, mapping = aes(x = .data$cid, y = .data$rid), label = "NA",
+                size = pch.cex, color = "grey92")
   }
 
   # colorbar
