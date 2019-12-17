@@ -51,7 +51,7 @@ plot.method <- function(p, data, method = c("circle", "square", "ellipse", "numb
   } else if (method == "number") {
     p <- p +
       geom_text(data = data, mapping = aes(x = .data$cid, y = .data$rid, colour = .data$rho),
-                label = data$rho.label, alpha = data$abs.rho)
+                label = data$rho.label)
   }
   return(p)
 }
