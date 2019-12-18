@@ -143,9 +143,9 @@ ggcorrplot.mixed(corr, upper = "ellipse", lower = "number", p.mat = p.mat,
 
 ``` r
 # Label significant coefficients with varying number of + denoting the significance level
-ggcorrplot.mixed(corr, upper = "ellipse", lower = "number", p.mat = p.mat, 
+(p <- ggcorrplot.mixed(corr, upper = "ellipse", lower = "number", p.mat = p.mat, 
                  insig = "label_sig", sig.lvl = c(0.05, 0.01, 0.001), pch = "+", 
-                 pch.cex = 4)
+                 pch.cex = 4))
 ```
 
 ![](figs/README-unnamed-chunk-2-12.png)<!-- -->
@@ -165,6 +165,39 @@ pos <- cbind(rid, cid)
 corr[pos] <- NA
 p.mat[pos] <- NA
 
+# Customize the appearance of corrplot using functions from ggplot2
+library(ggplot2)
+# Use different color palette
+col1 <- colorRampPalette(c("#7F0000", "red", "#FF7F00", "yellow", "white",
+                           "cyan", "#007FFF", "blue", "#00007F"))
+# Change the colorbar direction to horizontal and place it at the bottom
+# As mixed methods are used, there are two scales: color filled in ellipse and 
+# number color
+p <- p + scale_fill_gradientn(colours = col1(10), limits = c(-1, 1),
+                                guide = guide_colorbar(
+                                  direction = "horizontal",
+                                  title = "",
+                                  nbin = 1000,
+                                  ticks.colour = "black",
+                                  frame.colour = "black",
+                                  barwidth = 15,
+                                  barheight = 1.5)) +
+  scale_colour_gradientn(colours = col1(10), limits = c(-1, 1),
+                       guide = guide_colorbar(
+                         direction = "horizontal",
+                         title = "",
+                         nbin = 1000,
+                         ticks.colour = "black",
+                         frame.colour = "black",
+                         barwidth = 15,
+                         barheight = 1.5)) +
+  theme(legend.position = "bottom")
+p
+```
+
+<img src="figs/README-unnamed-chunk-3-1.png" style="display: block; margin: auto;" />
+
+``` r
 # Combine a lower corrgram and a mixed corrgram side by side with a shared colorbar on the bottom
 # a lower corrgram
 p1 <- ggcorrplot(corr, type = "lower", method = "square", p.mat = p.mat, 
@@ -175,8 +208,8 @@ p2 <- ggcorrplot.mixed(corr, upper = "ellipse", lower = "number", p.mat = p.mat,
                        pch = "+", pch.cex = 4)
 
 library(cowplot)
-prow <- plot_grid(p1 + ggplot2::theme(legend.position = "none"),
-                  p2 + ggplot2::theme(legend.position = "none"),
+prow <- plot_grid(p1 + theme(legend.position = "none"),
+                  p2 + theme(legend.position = "none"),
                   rel_widths = c(1, 1), nrow = 1, align = 'hv',
                   labels = c("(a)", "(b)"), label_x = 0, label_y = 1)
 
@@ -187,7 +220,7 @@ p <- cowplot::plot_grid(prow, legend, ncol = 1, rel_heights  = c(1, 0.15))
 p
 ```
 
-<img src="figs/README-unnamed-chunk-3-1.png" style="display: block; margin: auto;" />
+<img src="figs/README-unnamed-chunk-3-2.png" style="display: block; margin: auto;" />
 
 ## Citation
 
