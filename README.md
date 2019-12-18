@@ -157,14 +157,6 @@ a corrgram with other plots (including non-corrgrams) into one plot
 using [cowplot](https://github.com/wilkelab/cowplot), are demonstrated.
 
 ``` r
-# NAs are allowed in correlation matrix and p value matrix, which are labelled as NA
-# Assign NAs
-rid <- c(2, 3, 1, 2)
-cid <- c(3, 2, 2, 1)
-pos <- cbind(rid, cid)
-corr[pos] <- NA
-p.mat[pos] <- NA
-
 # Customize the appearance of corrplot using functions from ggplot2
 library(ggplot2)
 # Use different color palette
@@ -199,6 +191,15 @@ p
 
 ``` r
 # Combine a lower corrgram and a mixed corrgram side by side with a shared colorbar on the bottom
+
+# NAs are allowed in correlation matrix and p value matrix, which are labelled as NA
+# Assign NAs
+rid <- c(2, 3, 1, 2)
+cid <- c(3, 2, 2, 1)
+pos <- cbind(rid, cid)
+corr[pos] <- NA
+p.mat[pos] <- NA
+
 # a lower corrgram
 p1 <- ggcorrplot(corr, type = "lower", method = "square", p.mat = p.mat, 
                  insig = "label_sig", sig.lvl = c(0.05, 0.01, 0.001), show.diag = FALSE)
