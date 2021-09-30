@@ -12,7 +12,7 @@ plot.method <- function(p, data, method = c("circle", "square", "ellipse", "numb
     ellipse.xy <- function(rho, length = 100) {
       theta <- seq(0, 2 * pi, length = length)
       if (rho == 1) rho <- rho - 1e-4
-      d <- acos(rho)
+      d <- acos(-rho)
       x <- cos(theta + d / 2) / 2
       y <- cos(theta - d / 2) / 2
       as.data.frame(cbind(x, y))
