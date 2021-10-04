@@ -8,6 +8,7 @@ ggcorrplot.mixed(
   corr,
   upper = c("circle", "square", "ellipse", "number"),
   lower = c("number", "square", "ellipse", "circle"),
+  col = NULL,
   p.mat = NULL,
   sig.lvl = 0.05,
   number.digits = 2,
@@ -22,6 +23,8 @@ ggcorrplot.mixed(
 \item{upper}{a character indicating the visualization method of the upper triangular matrix to be used. Currently, it supports four methods, named \code{"circle"} (default), \code{"square"}, \code{"ellipse"}, \code{"number"}.}
 
 \item{lower}{a character indicating the visualization method of the lower triangular matrix to be used. Currently, it supports four methods, named \code{"circle"}, \code{"square"}, \code{"ellipse"}, \code{"number"}(default).}
+
+\item{col}{a vector of the colors to be used, which are distributed uniformly from -1 to 1. If NULL, col will be set to \code{RColorBrewer::brewer.pal(n = 11, name = "RdBu")}, the default colour scheme of \code{corrplot}.}
 
 \item{p.mat}{a matrix of p-value}
 
