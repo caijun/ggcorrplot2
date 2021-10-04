@@ -61,7 +61,7 @@ plot.method <- function(p, data, method = c("circle", "square", "ellipse", "numb
 #' @param corr a correlation matrix to be visualized
 #' @param method a character indicating the visualization method of correlation matrix to be used. Currently, it supports four methods, named \code{"circle"} (default), \code{"square"}, \code{"ellipse"}, \code{"number"}.
 #' @param type a character indicating that the \code{"full"} (default), \code{"upper"} or \code{"lower"} triangular matrix is displayed.
-#' @param col a vector of the colors to be used, which are distributed uniformly from -1 to 1. If NULL, col will be set to \code{RColorBrewer::brewer.pal(n = 11, name = "RdBu")}, the default colour scheme of `corrplot`.
+#' @param col a vector of the colors to be used, which are distributed uniformly from -1 to 1. If NULL, col will be set to \code{RColorBrewer::brewer.pal(n = 11, name = "RdBu")}, the default colour scheme of \code{corrplot}.
 #' @param p.mat a matrix of p-value
 #' @param sig.lvl a numeric vector specifying significant level(s). If the p-value in \code{p.mat} is bigger than \code{sig.lvl} (0.05 by default), then the corresponding correlation coefficient is regarded as insignificant. If \code{insig} is \code{"label_sig"}, this may be an increasing vector of significance levels, for example \code{c(0.05, 0.01, 0.001)}, in which case \code{pch} will be used once for the highest p-value interval and multiple times (e.g. "*", "**", "***") for each lower p-value interval.
 #' @param number.digits the number of decimal digits (2 by default) while the visualization method is \code{"number"}.
