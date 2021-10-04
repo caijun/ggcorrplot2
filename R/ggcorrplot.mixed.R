@@ -3,6 +3,7 @@
 #' @param corr a correlation matrix to be visualized
 #' @param upper a character indicating the visualization method of the upper triangular matrix to be used. Currently, it supports four methods, named \code{"circle"} (default), \code{"square"}, \code{"ellipse"}, \code{"number"}.
 #' @param lower a character indicating the visualization method of the lower triangular matrix to be used. Currently, it supports four methods, named \code{"circle"}, \code{"square"}, \code{"ellipse"}, \code{"number"}(default).
+#' @param col a vector of the colors to be used, which are distributed uniformly from -1 to 1. If NULL, col will be set to \code{RColorBrewer::brewer.pal(n = 11, name = "RdBu")}, the default colour scheme of `corrplot`.
 #' @param p.mat a matrix of p-value
 #' @param sig.lvl a numeric vector specifying significant level(s). If the p-value in \code{p.mat} is bigger than \code{sig.lvl} (0.05 by default), then the corresponding correlation coefficient is regarded as insignificant. If \code{insig} is \code{"label_sig"}, this may be an increasing vector of significance levels, for example \code{c(0.05, 0.01, 0.001)}, in which case \code{pch} will be used once for the highest p-value interval and multiple times (e.g. "*", "**", "***") for each lower p-value interval.
 #' @param number.digits the number of decimal digits (2 by default) while the visualization method is \code{"number"}.
@@ -12,6 +13,7 @@
 #' @export
 ggcorrplot.mixed <- function(corr, upper = c("circle", "square", "ellipse", "number"),
                              lower = c("number", "square", "ellipse", "circle"),
+                             col = NULL,
                              p.mat = NULL, sig.lvl = 0.05, number.digits = 2,
                              insig = c("pch", "blank", "label_sig"),
                              pch = 4, pch.cex = 5) {
@@ -74,8 +76,12 @@ ggcorrplot.mixed <- function(corr, upper = c("circle", "square", "ellipse", "num
     p.mat.insig <- NULL
   }
 
-  # default palette of corrplot
-  col2 <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(n = 11, name = "RdBu"))
+  if(is.null(col)) {
+    # default palette of corrplot
+    col <- RColorBrewer::brewer.pal(n = 11, name = "RdBu")
+  }
+  col2 <- grDevices::colorRampPalette(col)
+
 
   p <- ggplot(data = corr) +
     geom_rect(mapping = aes(xmin = .data$cid - 0.5, xmax = .data$cid + 0.5,
