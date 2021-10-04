@@ -6,9 +6,10 @@ vers = paste('R package version', meta$Version)
 citEntry(
   entry = 'manual',
   title = paste('ggcorrplot2:', meta$Title),
-  author = Filter(function(p) 'aut' %in% p$role, as.person(meta$Author)),
+  author = personList(as.person(Filter(function(p) 'aut' %in% p$role, as.person(meta$Author))),
+    as.person(Filter(function(p) 'ctb' %in% p$role, as.person(meta$Author)))),
   year = year,
   note = vers,
   url = meta$URL,
-  textVersion = paste('Jun Cai (', year, '). ggcorrplot2: ', meta$Title, '. ', vers, '.', sep = '')
+  textVersion = paste('Jun Cai and Granville Matheson (', year, '). ggcorrplot2: ', meta$Title, '. ', vers, '.', sep = '')
 )
