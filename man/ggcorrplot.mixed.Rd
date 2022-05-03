@@ -14,7 +14,7 @@ ggcorrplot.mixed(
   number.digits = 2,
   insig = c("pch", "blank", "label_sig"),
   pch = 4,
-  pch.cex = 5
+  pch.cex = 2.5
 )
 }
 \arguments{

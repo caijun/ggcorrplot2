@@ -15,7 +15,7 @@ ggcorrplot(
   show.diag = TRUE,
   insig = c("pch", "blank", "label_sig"),
   pch = 4,
-  pch.cex = 5
+  pch.cex = 2.5
 )
 }
 \arguments{

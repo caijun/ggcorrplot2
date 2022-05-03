@@ -16,7 +16,7 @@ ggcorrplot.mixed <- function(corr, upper = c("circle", "square", "ellipse", "num
                              col = NULL,
                              p.mat = NULL, sig.lvl = 0.05, number.digits = 2,
                              insig = c("pch", "blank", "label_sig"),
-                             pch = 4, pch.cex = 5) {
+                             pch = 4, pch.cex = 2.5) {
   upper <- match.arg(upper)
   lower <- match.arg(lower)
   insig <- match.arg(insig)
@@ -53,7 +53,7 @@ ggcorrplot.mixed <- function(corr, upper = c("circle", "square", "ellipse", "num
     sig.codes <- sapply(seq_along(sig.lvl), function(i) {
       # By default, mark significance with *
       if (!is.character(pch)) {
-        pch <- "*"
+        pch <- "\U2731"
       }
       paste(rep(pch, i), collapse = "")
     })
