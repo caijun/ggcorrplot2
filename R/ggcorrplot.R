@@ -75,7 +75,7 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
                        col = NULL,
                        sig.lvl = 0.05, number.digits = 2,
                        show.diag = TRUE, insig = c("pch", "blank", "label_sig"),
-                       pch = 4, pch.cex = 5) {
+                       pch = 4, pch.cex = 2.5) {
   method <- match.arg(method)
   type <- match.arg(type)
   insig <- match.arg(insig)
@@ -112,7 +112,7 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
     sig.codes <- sapply(seq_along(sig.lvl), function(i) {
       # By default, mark significance with *
       if (!is.character(pch)) {
-        pch <- "*"
+        pch <- "\U2731"
       }
       paste(rep(pch, i), collapse = "")
     })
