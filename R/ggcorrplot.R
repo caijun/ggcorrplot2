@@ -267,7 +267,8 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
   if (type == "full") {
     p <- p +
       scale_x_continuous(breaks = 1:nvars, labels = vars, expand = c(0, 0)) +
-      scale_y_reverse(breaks = 1:nvars, labels = vars, expand = c(0, 0))
+      scale_y_reverse(breaks = 1:nvars, labels = vars, expand = c(0, 0)) +
+      theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
   } else if (type == "lower") {
     if (show.diag) {
       y.vars <- data.frame(x = 0, y = 1:nvars)
@@ -280,10 +281,11 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
       diag.label <- utils::head(vars, -1)
     }
     p <- p +
-      geom_text(data = diag.vars, mapping = aes(.data$x, .data$y), label = diag.label,
-                colour = "grey30", size = geom.text.fontsize) +
+      geom_text(data = diag.vars, mapping = aes(.data$x, .data$y+0.4), label = diag.label,
+                colour = "grey30", size = geom.text.fontsize, angle = 90, hjust = 0) +
       scale_x_continuous(expand = c(0, 0)) +
-      scale_y_reverse(breaks = y.vars$y, labels = y.label, expand = c(0, 0),
+      scale_y_reverse(breaks = y.vars$y, labels = y.label,
+                      expand = expansion(mult = c(0, 0.02*nchar(diag.label[1]))),
                       limits = c(nvars + 0.5, min(diag.vars$y) - 0.5)) +
       theme(axis.text.x = element_blank(),
             axis.text.y = element_text(size = axis.text.fontsize))
@@ -299,12 +301,13 @@ ggcorrplot <- function(corr, method = c("circle", "square", "ellipse", "number")
       diag.label <- utils::head(vars, -1)
     }
     p <- p +
-      geom_text(data = diag.vars, mapping = aes(.data$x, .data$y), label = diag.label,
-                colour = "grey30", size = geom.text.fontsize) +
-      scale_x_continuous(breaks = x.vars$x, labels = x.label, expand = c(0, 0),
+      geom_text(data = diag.vars, mapping = aes(.data$x+0.4, .data$y), label = diag.label,
+                colour = "grey30", size = geom.text.fontsize, hjust = 1) +
+      scale_x_continuous(breaks = x.vars$x, labels = x.label,
+                         expand = expansion(mult = c(0.02*nchar(diag.label[1]), 0)),
                          position = "top", limits = c(min(diag.vars$x) - 0.5, nvars + 0.5)) +
       scale_y_reverse(expand = c(0, 0)) +
-      theme(axis.text.x = element_text(size = axis.text.fontsize),
+      theme(axis.text.x = element_text(size = axis.text.fontsize, angle = 90, hjust = 0),
             axis.text.y = element_blank())
   }
 
