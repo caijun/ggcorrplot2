@@ -1,8 +1,8 @@
 Package: ggcorrplot2
 Type: Package
 Title: Visualize a Correlation Matrix using ggplot2
-Version: 0.1.1
-Date: 2021-10-04
+Version: 0.1.2
+Date: 2022-05-07
 Authors@R: c(
     person("Jun", "Cai", role = c("aut", "cre"), 
     email = "cai-j12@mails.tsinghua.edu.cn",  comment = c(ORCID = "0000-0001-9495-1226")),

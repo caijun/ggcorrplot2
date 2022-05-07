@@ -11,5 +11,5 @@ citEntry(
   year = year,
   note = vers,
   url = meta$URL,
-  textVersion = paste('Jun Cai and Granville Matheson (', year, '). ggcorrplot2: ', meta$Title, '. ', vers, '.', sep = '')
+  textVersion = paste('Jun Cai, Granville Matheson and Samson Leonard Daniël (', year, '). ggcorrplot2: ', meta$Title, '. ', vers, '.', sep = '')
 )
