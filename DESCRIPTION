@@ -7,7 +7,9 @@ Authors@R: c(
     person("Jun", "Cai", role = c("aut", "cre"), 
     email = "cai-j12@mails.tsinghua.edu.cn",  comment = c(ORCID = "0000-0001-9495-1226")),
     person("Granville", "Matheson", role = "ctb",
-    email= "mathesong@gmail.com", comment = c(ORCID = "0000-0002-5646-4547"))
+    email= "mathesong@gmail.com", comment = c(ORCID = "0000-0002-5646-4547")),
+    person("Samson", "Leonard Daniël", role = "ctb",
+    email= "l.d.samson@gmail.com", comment = c(ORCID = "0000-0002-6252-7639"))
     )
 Maintainer: Jun Cai <caijun@fudan.edu.cn>
 Description: An implementation of the corrplot package using ggplot2.
